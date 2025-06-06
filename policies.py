@@ -131,7 +131,7 @@ class StackPolicy(object):
 
         self.in_progress = False
     
-    def get_action(self, obs, direction=None):
+    def get_action(self, obs, direction=None, gripper_dir=None, gripper_action=None):
         # Constants
         GRANULARITY = 0.01
         OBJ_DIST_THRESH = 0.01
@@ -139,8 +139,8 @@ class StackPolicy(object):
         curr_time = time.time_ns() / 1e6
 
         eef_pos = obs["robot0_eef_pos"]
-
         control = None
+        rotation = np.zeros(3)
         if self.in_progress:
             dist = np.linalg.norm(self.pid.target - eef_pos)
             
@@ -152,7 +152,7 @@ class StackPolicy(object):
             else:
                 control = self.pid.update(eef_pos)
         else:
-            print("CHANGIN DIRECTION:", direction)
+            # print("CHANGIN DIRECTION:", direction)
             match direction:
                 case "UP":
                     dir = np.array([0, 0, 1])
@@ -190,11 +190,34 @@ class StackPolicy(object):
                     self.in_progress = True
 
                     control = self.pid.update(eef_pos)
+
                 case _:
                     control = np.zeros(3)
                     self.in_progress = False
+
+        match gripper_dir:
+            case "CLOSE":
+                gripper_action = 1
+                self.in_progress = False
+
+            case "OPEN":
+                gripper_action = -1
+                self.in_progress = False
+
+            case "ROTATE_R":
+                rotation = np.array([0, 0, 0.01])
+                self.in_progress = False
+
+            case "ROTATE_L":
+                rotation = np.array([0, 0, -0.01])
+                self.in_progress = False
+
+            case "ROTATE_STOP":
+                rotation = np.array([0, 0, 0])
+                self.in_progress = False
+
             
-        return np.concatenate([control, np.zeros(3), [-1]])
+        return np.concatenate([control, rotation, [gripper_action]])
 
 
                 
