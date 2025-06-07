@@ -12,30 +12,287 @@
             max-width: 900px;
             margin: 2rem auto;
             padding: 0 1rem;
+            background: linear-gradient(-45deg, #f8f9fa, #e9ecef, #dee2e6, #f1f3f4);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Subtle gradient animation */
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Animated background shapes */
+        .background-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.25;
+            animation: float 15s infinite ease-in-out;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .shape:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 50%;
+            animation-delay: 0s;
+            animation-duration: 18s;
+        }
+
+        .shape:nth-child(2) {
+            top: 20%;
+            right: 20%;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-radius: 20%;
+            animation-delay: -3s;
+            animation-duration: 22s;
+        }
+
+        .shape:nth-child(3) {
+            top: 60%;
+            left: 15%;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-radius: 30%;
+            animation-delay: -6s;
+            animation-duration: 25s;
+        }
+
+        .shape:nth-child(4) {
+            bottom: 20%;
+            right: 15%;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            border-radius: 40%;
+            animation-delay: -9s;
+            animation-duration: 20s;
+        }
+
+        .shape:nth-child(5) {
+            top: 45%;
+            right: 10%;
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            border-radius: 50%;
+            animation-delay: -12s;
+            animation-duration: 24s;
+        }
+
+        .shape:nth-child(6) {
+            bottom: 40%;
+            left: 20%;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+            border-radius: 25%;
+            animation-delay: -4s;
+            animation-duration: 19s;
+        }
+
+        .shape:nth-child(7) {
+            top: 30%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            border-radius: 60%;
+            animation-delay: -7s;
+            animation-duration: 26s;
+        }
+
+        .shape:nth-child(8) {
+            bottom: 60%;
+            right: 40%;
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            border-radius: 15%;
+            animation-delay: -11s;
+            animation-duration: 21s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px) translateX(0px) rotate(0deg) scale(1);
+            }
+            25% {
+                transform: translateY(-40px) translateX(30px) rotate(90deg) scale(1.1);
+            }
+            50% {
+                transform: translateY(-20px) translateX(-25px) rotate(180deg) scale(0.9);
+            }
+            75% {
+                transform: translateY(-50px) translateX(20px) rotate(270deg) scale(1.05);
+            }
+            100% {
+                transform: translateY(0px) translateX(0px) rotate(360deg) scale(1);
+            }
+        }
+
+        /* Subtle overlay to soften the background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.75);
+            z-index: -1;
+            pointer-events: none;
         }
 
         h1,
         h2,
         h3 {
             color: #2c3e50;
+            position: relative;
+            z-index: 1;
         }
 
         code {
-            background-color: #f4f4f4;
+            background-color: rgba(244, 244, 244, 0.9);
             padding: 2px 4px;
             border-radius: 3px;
         }
 
         pre {
-            background-color: #f4f4f4;
+            background-color: rgba(244, 244, 244, 0.9);
             padding: 1rem;
             border-radius: 5px;
             overflow-x: auto;
+            backdrop-filter: blur(5px);
+        }
+
+        p, video {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Video styling for better presentation */
+        video {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        video:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Video fade-in animation */
+        .video-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .video-container.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Sound control overlay */
+        .sound-control {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            z-index: 10;
+        }
+
+        .sound-control:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .sound-control.muted {
+            background: rgba(220, 53, 69, 0.8);
+        }
+
+        .sound-control.muted:hover {
+            background: rgba(220, 53, 69, 1);
+        }
+
+        /* Video play indicator */
+        .video-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid rgba(255, 255, 255, 0.8);
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .video-container.paused::after {
+            opacity: 1;
         }
     </style>
 </head>
 
 <body>
+    <!-- Animated background shapes -->
+    <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
     <h1>Multimodal Human-Robot Interaction: Integrating Gesture and Speech Commands for Robotic Arm Control</h1>
 
     <h2>Abstract</h2>
@@ -58,9 +315,12 @@
         other, whatever direction our index finger is pointing relative to the x-axis of the webcam frame, we will move
         in that direction.
     </p>
-    <video width="848" height="464" controls>
-        <source src="GESTURES.mp4" type="video/mp4">
-    </video>
+    <div class="video-container">
+        <video width="848" height="464" loop preload="metadata">
+            <source src="GESTURES.mp4" type="video/mp4">
+        </video>
+        <button class="sound-control" title="Toggle sound">🔊</button>
+    </div>
 
     <h3>3.3 Speech Recognition</h3>
     <p>The speech recognition and processing module is split into two steps. Firstly, the speech to text system utilizes
@@ -71,22 +331,28 @@
     <pre><code>We are controlling a robot arm using voice commands. The user can control if the gripper is open or closed, rotate the arm, move the arm forward or backward, and change the speed of the arm. Based on the user's input, return the action to be taken. Return only the action, no other text. The action must be one of the following: … Here is the user's input: {text}</code></pre>
     <p>Using the LLM we are able to convert unstructured natural language to structured control inputs that are mapped
         to control actions.</p>
-    <video width="848" height="464" controls>
-        <source src="NLP.mp4" type="video/mp4">
-    </video>
+    <div class="video-container">
+        <video width="848" height="464" loop preload="metadata">
+            <source src="NLP.mp4" type="video/mp4">
+        </video>
+        <button class="sound-control" title="Toggle sound">🔊</button>
+    </div>
 
     <h3>3.4 Robotic Control</h3>
     <p>At this stage, we have mapped either a speech command or a hand gesture to a certain movement direction. Here, we
-        then use a PID controller to move our robot’s end effector to a specific location in that vector direction. For
-        example, if our gestured direction was “UP,” it would be mapped to a normal vector [0, 0, 1] and we would move
+        then use a PID controller to move our robot's end effector to a specific location in that vector direction. For
+        example, if our gestured direction was "UP," it would be mapped to a normal vector [0, 0, 1] and we would move
         our end effector to a location 1 unit above our current location. This methodology is similarly applied to all
         further movement directions.</p>
 
     <h2>Full Demo Evaluation</h2>
 
-    <video width="848" height="464" controls>
-        <source src="FULL_DEMO.mp4" type="video/mp4">
-    </video>
+    <div class="video-container">
+        <video width="848" height="464" loop preload="metadata">
+            <source src="FULL_DEMO.mp4" type="video/mp4">
+        </video>
+        <button class="sound-control" title="Toggle sound">🔊</button>
+    </div>
 
     <h2>5. Discussion and Reflections</h2>
 
@@ -118,6 +384,156 @@
         approaches. The system architecture effectively combines MediaPipe's robust hand tracking capabilities with
         local language model processing through a threaded control framework that enables simultaneous processing of
         multiple input modalities.</p>
+
+    <script>
+        // Intersection Observer for video autoplay with smart audio handling
+        const videoContainers = document.querySelectorAll('.video-container');
+        const videos = document.querySelectorAll('video');
+        const soundControls = document.querySelectorAll('.sound-control');
+
+        const observerOptions = {
+            threshold: 0.5, // Trigger when 50% of the video is visible
+            rootMargin: '0px 0px -100px 0px' // Start animation slightly before entering viewport
+        };
+
+        // Try to play video with sound, fallback to muted if blocked
+        async function playVideoWithSmartAudio(video) {
+            try {
+                // First try to play with sound
+                await video.play();
+                console.log('Video playing with sound:', video.src);
+            } catch (error) {
+                console.log('Autoplay with sound blocked, trying muted:', error.message);
+                try {
+                    // If blocked, mute and try again
+                    video.muted = true;
+                    await video.play();
+                    console.log('Video playing muted:', video.src);
+                    // Update sound control button to show muted state
+                    updateSoundControlButton(video);
+                } catch (mutedError) {
+                    console.log('Autoplay completely blocked:', mutedError.message);
+                }
+            }
+        }
+
+        // Update sound control button appearance
+        function updateSoundControlButton(video) {
+            const container = video.parentElement;
+            const soundControl = container.querySelector('.sound-control');
+            if (soundControl) {
+                if (video.muted) {
+                    soundControl.textContent = '🔇';
+                    soundControl.classList.add('muted');
+                    soundControl.title = 'Click to unmute';
+                } else {
+                    soundControl.textContent = '🔊';
+                    soundControl.classList.remove('muted');
+                    soundControl.title = 'Click to mute';
+                }
+            }
+        }
+
+        const videoObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const container = entry.target;
+                const video = container.querySelector('video');
+                
+                if (entry.isIntersecting) {
+                    // Add the in-view class for fade-in animation
+                    container.classList.add('in-view');
+                    
+                    // Play the video after a short delay for smooth transition
+                    setTimeout(() => {
+                        if (video && video.paused) {
+                            playVideoWithSmartAudio(video);
+                        }
+                    }, 300);
+                } else {
+                    // Pause video when out of view to save resources
+                    if (video && !video.paused) {
+                        video.pause();
+                        container.classList.add('paused');
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Observe all video containers
+        videoContainers.forEach(container => {
+            videoObserver.observe(container);
+        });
+
+        // Handle video events
+        videos.forEach(video => {
+            video.addEventListener('loadedmetadata', () => {
+                console.log('Video loaded:', video.src);
+                updateSoundControlButton(video);
+            });
+
+            video.addEventListener('play', () => {
+                const container = video.parentElement;
+                container.classList.remove('paused');
+                console.log('Video started playing:', video.src);
+            });
+
+            video.addEventListener('pause', () => {
+                const container = video.parentElement;
+                container.classList.add('paused');
+            });
+
+            video.addEventListener('volumechange', () => {
+                updateSoundControlButton(video);
+            });
+
+            // Click video to play/pause
+            video.addEventListener('click', () => {
+                if (video.paused) {
+                    playVideoWithSmartAudio(video);
+                } else {
+                    video.pause();
+                }
+            });
+
+            // Handle autoplay policy restrictions
+            video.addEventListener('error', (e) => {
+                console.log('Video error:', e);
+            });
+        });
+
+        // Sound control button functionality
+        soundControls.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent video click event
+                const container = button.parentElement;
+                const video = container.querySelector('video');
+                
+                if (video) {
+                    video.muted = !video.muted;
+                    updateSoundControlButton(video);
+                    
+                    // If video is paused and we're unmuting, try to play
+                    if (!video.muted && video.paused) {
+                        playVideoWithSmartAudio(video);
+                    }
+                }
+            });
+        });
+
+        // Initialize sound control buttons
+        videos.forEach(video => {
+            updateSoundControlButton(video);
+        });
+
+        // Handle user interaction to enable autoplay (required by some browsers)
+        let userHasInteracted = false;
+        document.addEventListener('click', () => {
+            if (!userHasInteracted) {
+                userHasInteracted = true;
+                console.log('User interaction detected, autoplay now available');
+            }
+        }, { once: true });
+    </script>
 </body>
 
 </html>
