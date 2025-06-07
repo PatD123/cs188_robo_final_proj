@@ -124,7 +124,6 @@ class GestureRecognizer:
             if results:
                 hand_landmarks_list = results.hand_landmarks
                 self.move_dir = self._compute_direction(hand_landmarks_list)
-                print(self.move_dir)
                 if self.show_UI:
                     annotated_image = self._draw_landmarks_on_image(mp_image.numpy_view(), results)
                     annotated_image = self._add_ui_elements(annotated_image, self.move_dir)

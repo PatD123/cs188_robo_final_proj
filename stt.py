@@ -19,8 +19,12 @@ class STT:
             self.move_dir = "ROTATE_R"
         elif text == "rotate left":
             self.move_dir = "ROTATE_L"
-        elif text == "stop rotation":
-            self.move_dir = "ROTATE_STOP"
+        elif text == "forward":
+            self.move_dir = "FORWARD"
+        elif text == "back":
+            self.move_dir = "BACKWARD"
+        elif text == "stop":
+            self.move_dir = "STOP"
         else:
             self.move_dir = None
         

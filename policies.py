@@ -116,9 +116,9 @@ class StackPolicy(object):
                        self.cubeB_pos.copy(),   # Go to Cube B + dZ
                        self.cubeB_pos.copy(),]  # Go to Cube B
         
-        kp = 4
-        ki = 1
-        kd = 1
+        kp = 1
+        ki = 3
+        kd = 2
         target_pos = self.cubeA_pos
         target_pos[2] += 0.2
 
@@ -133,7 +133,8 @@ class StackPolicy(object):
     
     def get_action(self, obs, direction=None, gripper_dir=None, gripper_action=None):
         # Constants
-        GRANULARITY = 0.01
+        GRANULARITY = 0.001
+        FORWARD_GRANULARITY = BACKWARD_GRANULARITY = 0.0005
         OBJ_DIST_THRESH = 0.01
 
         curr_time = time.time_ns() / 1e6
@@ -178,19 +179,6 @@ class StackPolicy(object):
                     self.in_progress = True
 
                     control = self.pid.update(eef_pos)
-                case "FORWARD":
-                    dir = np.array([1, 0, 0])
-                    self.pid.reset(target=eef_pos.copy() + GRANULARITY * dir)
-                    self.in_progress = True
-
-                    control = self.pid.update(eef_pos)
-                case "BACKWARD":
-                    dir = np.array([-1, 0, 0])
-                    self.pid.reset(target=eef_pos.copy() + GRANULARITY * dir)
-                    self.in_progress = True
-
-                    control = self.pid.update(eef_pos)
-
                 case _:
                     control = np.zeros(3)
                     self.in_progress = False
@@ -198,23 +186,38 @@ class StackPolicy(object):
         match gripper_dir:
             case "CLOSE":
                 gripper_action = 1
-                self.in_progress = False
 
             case "OPEN":
                 gripper_action = -1
-                self.in_progress = False
 
             case "ROTATE_R":
                 rotation = np.array([0, 0, 0.01])
-                self.in_progress = False
 
             case "ROTATE_L":
                 rotation = np.array([0, 0, -0.01])
-                self.in_progress = False
+            
+            case "FORWARD":
+                if not self.in_progress:
+                    dir = np.array([1, 0, 0])
+                    self.pid.reset(target=eef_pos.copy() + FORWARD_GRANULARITY * dir)
+                    self.in_progress = True
+                    control = self.pid.update(eef_pos)
 
-            case "ROTATE_STOP":
+            case "BACKWARD":
+                if not self.in_progress:
+                    dir = np.array([-1, 0, 0])
+                    self.pid.reset(target=eef_pos.copy() + BACKWARD_GRANULARITY * dir)
+                    self.in_progress = True
+                    control = self.pid.update(eef_pos)
+
+            case "STOP":
+                control = np.zeros(3)
                 rotation = np.array([0, 0, 0])
                 self.in_progress = False
+                gripper_dir = ""
+            
+            case _:
+                pass
 
             
         return np.concatenate([control, rotation, [gripper_action]])

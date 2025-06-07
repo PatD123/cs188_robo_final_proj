@@ -18,6 +18,7 @@ class RoboSuite:
             has_offscreen_renderer=False,
             use_camera_obs=False,
             ignore_done=True,
+            render_camera=None,
         )
 
     def _create_policy(self):
