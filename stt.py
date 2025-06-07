@@ -2,6 +2,9 @@ from RealtimeSTT import AudioToTextRecorder
 from ollama import chat, ChatResponse
 
 class STT:
+    """
+    STT class for speech-to-text.
+    """
     def __init__(self):
         self.recorder = AudioToTextRecorder(language="en", enable_realtime_transcription=False, print_transcription_time=True )
         self.move_dir = None
@@ -30,32 +33,6 @@ class STT:
         print("Input: ", text)
         print("Output: ", self.move_dir)
         return self.move_dir
-
-    # def process_text(self, text):
-    #     text = self.clean_text(text)
-    #     print("text detected: ", text)
-    #     if text == "close":
-    #         self.move_dir = "CLOSE"
-    #     elif text == "open":
-    #         self.move_dir = "OPEN"
-    #     elif text == "rotate right":
-    #         self.move_dir = "ROTATE_R"
-    #     elif text == "rotate left":
-    #         self.move_dir = "ROTATE_L"
-    #     elif text == "forward":
-    #         self.move_dir = "FORWARD"
-    #     elif text == "back":
-    #         self.move_dir = "BACKWARD"
-    #     elif text == "increase speed":
-    #         self.move_dir = "SPEED_UP"
-    #     elif text == "decrease speed":
-    #         self.move_dir = "SLOW_DOWN"
-    #     elif text == "reset speed":
-    #         self.move_dir = "RESET"
-    #     elif text == "stop":
-    #         self.move_dir = "STOP"
-    #     else:
-    #         self.move_dir = None
         
     def clean_text(self, text):
         text = text.lower().strip()
