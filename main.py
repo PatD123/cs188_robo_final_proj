@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     stt = STT()
     #set show_UI to True to see the hand recognition UI on windows
-    gesture_recognizer = gestures.GestureRecognizer(show_UI=False)
+    gesture_recognizer = gestures.GestureRecognizer(show_UI=True)
     
     robo_suite._create_environment()
     robo_suite._create_policy()

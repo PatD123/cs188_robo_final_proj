@@ -5,7 +5,7 @@ class STT:
     def __init__(self):
         self.recorder = AudioToTextRecorder(language="en", enable_realtime_transcription=False)
         self.move_dir = None
-        self.prompt = """We are controlling a robot arm using voice commands. The user can control if the gripper is open or closed, rotate the arm, move the arm forward or backward, and change the speed of the arm. Based on the user's input, return the action to be taken. Return only the action, no other text. The action must be one of the following:
+        self.prompt = """We are controlling a robot arm using voice commands. The user can rotate the arm, control if the gripper is closed or open, move the arm forward or backward, and change the speed of the arm. Based on the user's input, return the action to be taken. Return only the action, no other text. The action must be one of the following:
         - CLOSE
         - OPEN
         - ROTATE_R

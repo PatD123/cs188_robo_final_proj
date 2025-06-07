@@ -145,6 +145,8 @@ class StackPolicy(object):
         eef_pos = obs["robot0_eef_pos"]
         control = None
         rotation = np.zeros(3)
+        
+            
         if self.in_progress:
             dist = np.linalg.norm(self.pid.target - eef_pos)
             
@@ -155,7 +157,7 @@ class StackPolicy(object):
                 control = np.zeros(3)
             else:
                 control = self.pid.update(eef_pos)
-        else:
+        elif direction:
             # print("CHANGIN DIRECTION:", direction)
             match direction:
                 case "UP":
@@ -185,74 +187,75 @@ class StackPolicy(object):
                 case _:
                     control = np.zeros(3)
                     rotation = np.array([0, 0, 0])
+                    self.in_progress = False        
+        else:
+            match gripper_dir:
+                case "CLOSE":
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, 0])
+                    gripper_action = 1
+
+                case "OPEN":
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, 0])
+                    gripper_action = -1
+
+                case "ROTATE_R":
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, 0.01])
+
+                case "ROTATE_L":
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, -0.01])
+
+                case "SPEED_UP":
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, 0])
                     self.in_progress = False
+                    self.GRANULARITY += 0.002
+                    self.FORWARD_GRANULARITY += 0.0002
+                    self.BACKWARD_GRANULARITY += 0.0002
+                    self.ROTATION_GRANULARITY += 0.02
 
-        match gripper_dir:
-            case "CLOSE":
-                control = np.zeros(3)
-                rotation = np.array([0, 0, 0])
-                gripper_action = 1
+                case "SLOW_DOWN":
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, 0])
+                    self.in_progress = False
+                    self.GRANULARITY -= 0.002
+                    self.FORWARD_GRANULARITY -= 0.0002
+                    self.BACKWARD_GRANULARITY -= 0.0002
+                    self.ROTATION_GRANULARITY -= 0.02
 
-            case "OPEN":
-                control = np.zeros(3)
-                rotation = np.array([0, 0, 0])
-                gripper_action = -1
+                case "RESET":
+                    self.GRANULARITY = 0.001
+                    self.FORWARD_GRANULARITY = self.BACKWARD_GRANULARITY = 0.0005
+                    self.ROTATION_GRANULARITY = 0.01
+                
+                case "FORWARD":
+                    if not self.in_progress:
+                        dir = np.array([1, 0, 0])
+                        self.pid.reset(target=eef_pos.copy() + self.FORWARD_GRANULARITY * dir)
+                        self.in_progress = True
+                        control = self.pid.update(eef_pos)
 
-            case "ROTATE_R":
-                control = np.zeros(3)
-                rotation = np.array([0, 0, 0.01])
+                case "BACKWARD":
+                    if not self.in_progress:
+                        dir = np.array([-1, 0, 0])
+                        self.pid.reset(target=eef_pos.copy() + self.BACKWARD_GRANULARITY * dir)
+                        self.in_progress = True
+                        control = self.pid.update(eef_pos)
 
-            case "ROTATE_L":
-                control = np.zeros(3)
-                rotation = np.array([0, 0, -0.01])
-
-            case "SPEED_UP":
-                control = np.zeros(3)
-                rotation = np.array([0, 0, 0])
-                self.in_progress = False
-                self.GRANULARITY += 0.002
-                self.FORWARD_GRANULARITY += 0.0002
-                self.BACKWARD_GRANULARITY += 0.0002
-                self.ROTATION_GRANULARITY += 0.02
-
-            case "SLOW_DOWN":
-                control = np.zeros(3)
-                rotation = np.array([0, 0, 0])
-                self.in_progress = False
-                self.GRANULARITY -= 0.002
-                self.FORWARD_GRANULARITY -= 0.0002
-                self.BACKWARD_GRANULARITY -= 0.0002
-                self.ROTATION_GRANULARITY -= 0.02
-
-            case "RESET":
-                self.GRANULARITY = 0.001
-                self.FORWARD_GRANULARITY = self.BACKWARD_GRANULARITY = 0.0005
-                self.ROTATION_GRANULARITY = 0.01
-            
-            case "FORWARD":
-                if not self.in_progress:
-                    dir = np.array([1, 0, 0])
-                    self.pid.reset(target=eef_pos.copy() + self.FORWARD_GRANULARITY * dir)
-                    self.in_progress = True
-                    control = self.pid.update(eef_pos)
-
-            case "BACKWARD":
-                if not self.in_progress:
-                    dir = np.array([-1, 0, 0])
-                    self.pid.reset(target=eef_pos.copy() + self.BACKWARD_GRANULARITY * dir)
-                    self.in_progress = True
-                    control = self.pid.update(eef_pos)
-
-            case "STOP":
-                control = np.zeros(3)
-                rotation = np.array([0, 0, 0])
-                self.in_progress = False
-                gripper_dir = ""
-            
-            case _:
-                control = np.zeros(3)
-                rotation = np.array([0, 0, 0])
-                self.in_progress = False
+                case "STOP":
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, 0])
+                    self.in_progress = False
+                    gripper_dir = ""
+                
+                case _:
+                    control = np.zeros(3)
+                    rotation = np.array([0, 0, 0])
+                    self.in_progress = False
+        
 
 
             
