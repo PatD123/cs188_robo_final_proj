@@ -3,7 +3,7 @@ from ollama import chat, ChatResponse
 
 class STT:
     def __init__(self):
-        self.recorder = AudioToTextRecorder(language="en", enable_realtime_transcription=False)
+        self.recorder = AudioToTextRecorder(language="en", enable_realtime_transcription=False, print_transcription_time=True )
         self.move_dir = None
         self.prompt = """We are controlling a robot arm using voice commands. The user can rotate the arm, control if the gripper is closed or open, move the arm forward or backward, and change the speed of the arm. Based on the user's input, return the action to be taken. Return only the action, no other text. The action must be one of the following:
         - CLOSE
