@@ -130,11 +130,14 @@ class StackPolicy(object):
         self.prev_ctrl_output = np.array([0, 0, 0])
 
         self.in_progress = False
+
+        self.GRANULARITY = 0.001
+        self.FORWARD_GRANULARITY = self.BACKWARD_GRANULARITY = 0.0005
+        self.ROTATION_GRANULARITY = 0.01
     
     def get_action(self, obs, direction=None, gripper_dir=None, gripper_action=None):
         # Constants
-        GRANULARITY = 0.001
-        FORWARD_GRANULARITY = BACKWARD_GRANULARITY = 0.0005
+        
         OBJ_DIST_THRESH = 0.01
 
         curr_time = time.time_ns() / 1e6
@@ -157,56 +160,86 @@ class StackPolicy(object):
             match direction:
                 case "UP":
                     dir = np.array([0, 0, 1])
-                    self.pid.reset(target=eef_pos.copy() + GRANULARITY * dir)
+                    self.pid.reset(target=eef_pos.copy() + self.GRANULARITY * dir)
                     self.in_progress = True
 
                     control = self.pid.update(eef_pos)
                 case "DOWN":
                     dir = np.array([0, 0, -1])
-                    self.pid.reset(target=eef_pos.copy() + GRANULARITY * dir)
+                    self.pid.reset(target=eef_pos.copy() + self.GRANULARITY * dir)
                     self.in_progress = True
 
                     control = self.pid.update(eef_pos)
                 case "RIGHT":
                     dir = np.array([0, 1, 0])
-                    self.pid.reset(target=eef_pos.copy() + GRANULARITY * dir)
+                    self.pid.reset(target=eef_pos.copy() + self.GRANULARITY * dir)
                     self.in_progress = True
 
                     control = self.pid.update(eef_pos)
                 case "LEFT":
                     dir = np.array([0, -1, 0])
-                    self.pid.reset(target=eef_pos.copy() + GRANULARITY * dir)
+                    self.pid.reset(target=eef_pos.copy() + self.GRANULARITY * dir)
                     self.in_progress = True
 
                     control = self.pid.update(eef_pos)
                 case _:
                     control = np.zeros(3)
+                    rotation = np.array([0, 0, 0])
                     self.in_progress = False
 
         match gripper_dir:
             case "CLOSE":
+                control = np.zeros(3)
+                rotation = np.array([0, 0, 0])
                 gripper_action = 1
 
             case "OPEN":
+                control = np.zeros(3)
+                rotation = np.array([0, 0, 0])
                 gripper_action = -1
 
             case "ROTATE_R":
+                control = np.zeros(3)
                 rotation = np.array([0, 0, 0.01])
 
             case "ROTATE_L":
+                control = np.zeros(3)
                 rotation = np.array([0, 0, -0.01])
+
+            case "SPEED_UP":
+                control = np.zeros(3)
+                rotation = np.array([0, 0, 0])
+                self.in_progress = False
+                self.GRANULARITY += 0.002
+                self.FORWARD_GRANULARITY += 0.0002
+                self.BACKWARD_GRANULARITY += 0.0002
+                self.ROTATION_GRANULARITY += 0.02
+
+            case "SLOW_DOWN":
+                control = np.zeros(3)
+                rotation = np.array([0, 0, 0])
+                self.in_progress = False
+                self.GRANULARITY -= 0.002
+                self.FORWARD_GRANULARITY -= 0.0002
+                self.BACKWARD_GRANULARITY -= 0.0002
+                self.ROTATION_GRANULARITY -= 0.02
+
+            case "RESET":
+                self.GRANULARITY = 0.001
+                self.FORWARD_GRANULARITY = self.BACKWARD_GRANULARITY = 0.0005
+                self.ROTATION_GRANULARITY = 0.01
             
             case "FORWARD":
                 if not self.in_progress:
                     dir = np.array([1, 0, 0])
-                    self.pid.reset(target=eef_pos.copy() + FORWARD_GRANULARITY * dir)
+                    self.pid.reset(target=eef_pos.copy() + self.FORWARD_GRANULARITY * dir)
                     self.in_progress = True
                     control = self.pid.update(eef_pos)
 
             case "BACKWARD":
                 if not self.in_progress:
                     dir = np.array([-1, 0, 0])
-                    self.pid.reset(target=eef_pos.copy() + BACKWARD_GRANULARITY * dir)
+                    self.pid.reset(target=eef_pos.copy() + self.BACKWARD_GRANULARITY * dir)
                     self.in_progress = True
                     control = self.pid.update(eef_pos)
 
@@ -217,7 +250,10 @@ class StackPolicy(object):
                 gripper_dir = ""
             
             case _:
-                pass
+                control = np.zeros(3)
+                rotation = np.array([0, 0, 0])
+                self.in_progress = False
+
 
             
         return np.concatenate([control, rotation, [gripper_action]])
