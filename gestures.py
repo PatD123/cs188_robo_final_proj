@@ -8,6 +8,9 @@ from mediapipe.framework.formats import landmark_pb2
 
 
 class GestureRecognizer:
+    """
+    GestureRecognizer class for hand gesture recognition.
+    """
     def __init__(self, show_UI=False):
         self.base_options = BaseOptions(model_asset_path='hand_landmarker.task')
         self.options = HandLandmarkerOptions(
