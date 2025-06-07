@@ -1,0 +1,205 @@
+Multimodal Human-Robot Interaction: Integrating Gesture and Speech Commands for Robotic Arm Control
+Abstract
+This paper presents a multimodal interface for controlling robotic arms through the integration of hand gesture recognition and natural language speech commands. Our system combines MediaPipe for real-time hand gesture detection with RealtimeSTT for speech transcription and Llama3.2 for natural language command interpretation. The approach is evaluated in RoboSuite simulation environment using a Franka Panda arm performing block stacking tasks. Results demonstrate successful multimodal integration while highlighting latency challenges in local LLM processing. The system achieves improved task completion through complementary gesture and speech modalities.
+1. Introduction + Problem Statement
+Current robotic control interfaces in the cases of teleoperated robots require a great deal of expensive equipment and joint manipulators. Even in the cases of autonomous systems, a major contributor to the total cost of the interface is driven up due to the inclusion of sensors, motors, and bare metal equipment needed on the operator side. Secondly, existing teleoperated robotic systems frequently demonstrate operational behaviors that lack intuitiveness for the human operator, and as a result we want an interface to bridge this gap between humans and robots nicely. 
+This research addresses these chronic limitations by developing a multimodal robotic control system that integrates gesture recognition and speech processing into a unified interface. The system promotes vision-based manipulation, reflecting how humans naturally interact with their environment, and incorporates natural language as a primary mode of communication. The system is evaluated through standardized simulation to assess reliability and effectiveness while identifying specific challenges and considerations for practical deployment in real-world applications. 
+3. System Design and Implementation
+3.1 System Architecture
+Our multimodal robotic control system consists of two input modules which collect and process spatial and audio signals, before sending control signals into the PID module, which controls the robot. The system runs on a multi-threaded architecture that enables real-time processing of both gesture and speech inputs simultaneously, one thread handling gesture recognition and another handling speech-to-action. 
+3.2 Gesture Recognition
+The gesture recognition module forms the foundation of spatial control, utilizing Google's MediaPipe HandLandmarker framework to provide hand tracking capabilities. The system captures video input and MediaPipe processes each frame to extract 21 hand landmarks per detected hand.
+The directional command interpretation system implements a sophisticated vector-based approach to classify hand gestures into robotic movement commands. The algorithm analyzes the spatial relationship between specific finger landmarks, particularly focusing on the thumb tip, thumb base, index finger tip, and index finger base positions. 
+By computing directional vectors between these landmarks and applying dot product analysis, the system determines the primary pointing direction of the index finger. The classification process uses precise angular thresholds, with vertical movements detected within 70 to 120 degrees from the horizontal axis, rightward movements within 0 to 20 degrees, and leftward movements within 160 to 180 degrees. This approach provides robust gesture recognition while minimizing false classifications from ambiguous hand positions.
+3.3 Speech Recognition
+The speech recognition and processing module is split into two steps. Firstly, there is pseudo-real time speech to text transcription, followed by natural language processing to obtain structured control signals. 
+The speech to text system utilizes the RealtimeSTT library and OpenAI whisper for continuous audio capture and transcription. When voice is detected, the system records a snippet of audio which it sends to the model to be transcribed to text. 
+Subsequently, the transcribed text is sent to a locally-hosted Llama3.2 language model accessed via the Ollama framework. We use the following prompt to convert the natural language into predefined structured control inputs: 
+"""We are controlling a robot arm using voice commands. The user can control if the gripper is open or closed, rotate the arm, move the arm forward or backward, and change the speed of the arm. Based on the user's input, return the action to be taken. Return only the action, no other text. The action must be one of the following: … Here is the user's input: {text}"""
+Using the LLM we are able to convert unstructured natural language to structured control inputs that are mapped to control actions. 
+3.4 Robotic Control
+At this stage, we have mapped either a speech command or a hand gesture to a certain movement direction. Here, we then use a PID controller to move our robot’s end effector to a specific location in that vector direction. For example, if our gestured direction was “UP,” it would be mapped to a normal vector [0, 0, 1] and we would move our end effector to a location 1 unit above our current location. This methodology is similarly applied to all further movement directions.
+
+One thing to note here is that the Robosuite environment is quite small so moving 1 unit in the z direction is a hasty jump, and as a result, we wanted something more precise. Hence, we defined an overall variable called GRANULARITY that specified how much in each direction should our PID be moving. In effect, this results in either accelerating or decelerating the robotic end effector. In scenarios where precision is critical—such as in the Stacking Cubes task, where the final step involves placing the red cube on top of the green one—fine control becomes essential. To achieve this, the system slows down as it approaches the target, allowing for more precise positioning before releasing the cube.
+4. Evaluation Results
+4.1 Experimental Methodology
+The system evaluation was conducted through controlled experiments focusing on task completion accuracy, response latency, and multimodal integration effectiveness. Our simulation environment was the Block Stacking policy, trying to stack the smaller red cube atop the bigger green cube.
+4.2 Performance Analysis
+Due to the nature of the Block Stacking environment, we were always able to stack our red cube on top of the green cube using strictly gestures and speech. However, some instructions needed to be repeated, in particular speech instructions that were not transcribed and classified correctly the first time around.
+Latency measurements revealed the primary performance bottleneck in the speech processing pipeline. Gesture recognition maintained consistently low latency at 33 milliseconds average, making it suitable for real-time control applications. However, speech processing exhibited significantly higher delays, with speech-to-text conversion and language model inference requiring 1-2 seconds. The overall system response time, with llama 3.2, Mediapipe, and RealTimeSTT, averaged 3.8 seconds, dominated by the natural language processing components.
+Our final evaluation pertains to accuracy of our transcription and action classification framework. Out of 50 tested samples of “Open the gripper,” “Move forward,” “Move backward,” etc., it classified the action correctly 39 times.
+ 5. Discussion and Reflections
+5.1 Technical Contributions and Insights
+This research demonstrates the practical feasibility of integrating gesture recognition with local language model processing for robotic control applications. The successful combination of real-time visual input with natural language commands effectively leverages each modality's inherent strengths. The gesture recognition system provides immediate spatial control with minimal latency, while speech commands enable semantic task specification, parameter adjustments and a wider action space that would be difficult to achieve through gestures alone.
+5.2 Challenges and Limitations
+The most significant challenge identified is the latency bottleneck associated with local language model processing. The 3.45-second average response time for speech commands significantly exceeds the threshold for perceived real-time interaction, potentially reducing user satisfaction and limiting practical applicability. This can be improved with more powerful computing and GPU hardware. 
+Similarly, the accuracy of the natural language evaluation can be improved with better hardware. We were limited to the llama3.2 model due to its smaller size and quicker token processing rate to attempt to improve the latency. With more powerful compute hardware, better models can be used with improved natural language processing ability. 
+Gesture recognition robustness represents another important limitation. While MediaPipe provides reliable hand tracking under controlled conditions, the current implementation shows sensitivity to environmental factors including lighting variations and hand occlusion. Additionally, the lack of depth sensing removes several intuitive gestures and actions from being recognized by the system. 
+6. Conclusion
+This research presents a successful integration of gesture recognition and speech processing for multimodal robotic arm control, demonstrating measurable improvements in task completion rates compared to single-modality approaches. The system architecture effectively combines MediaPipe's robust hand tracking capabilities with local language model processing through a threaded control framework that enables simultaneous processing of multiple input modalities.
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multimodal Human-Robot Interaction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #2c3e50;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Multimodal Human-Robot Interaction: Integrating Gesture and Speech Commands for Robotic Arm Control</h1>
+
+    <h2>Abstract</h2>
+    <p>This paper presents a multimodal interface for controlling robotic arms through the integration of hand gesture
+        recognition and natural language speech commands. Our system combines MediaPipe for real-time hand gesture
+        detection with RealtimeSTT for speech transcription and Llama3.2 for natural language command interpretation.
+        The approach is evaluated in the RoboSuite simulation environment using a Franka Panda arm performing block
+        stacking tasks. Results demonstrate successful multimodal integration while highlighting latency challenges in
+        local LLM processing. The system achieves improved task completion through complementary gesture and speech
+        modalities.</p>
+
+    <h2>1. Introduction + Problem Statement</h2>
+    <p>Current robotic control interfaces in the cases of teleoperated robots require a great deal of expensive
+        equipment and joint manipulators. Even in the cases of autonomous systems, a major contributor to the total cost
+        of the interface is driven up due to the inclusion of sensors, motors, and bare metal equipment needed on the
+        operator side. Secondly, existing teleoperated robotic systems frequently demonstrate operational behaviors that
+        lack intuitiveness for the human operator, and as a result we want an interface to bridge this gap between
+        humans and robots nicely.</p>
+    <p>This research addresses these chronic limitations by developing a multimodal robotic control system that
+        integrates gesture recognition and speech processing into a unified interface. The system promotes vision-based
+        manipulation, reflecting how humans naturally interact with their environment, and incorporates natural language
+        as a primary mode of communication. The system is evaluated through standardized simulation to assess
+        reliability and effectiveness while identifying specific challenges and considerations for practical deployment
+        in real-world applications.</p>
+
+    <h2>3. System Design and Implementation</h2>
+
+    <h3>3.1 System Architecture</h3>
+    <p>Our multimodal robotic control system consists of two input modules which collect and process spatial and audio
+        signals, before sending control signals into the PID module, which controls the robot. The system runs on a
+        multi-threaded architecture that enables real-time processing of both gesture and speech inputs simultaneously,
+        one thread handling gesture recognition and another handling speech-to-action.</p>
+
+    <h3>3.2 Gesture Recognition</h3>
+    <p>The gesture recognition module forms the foundation of spatial control, utilizing Google's MediaPipe
+        HandLandmarker framework to provide hand tracking capabilities. The system captures video input and MediaPipe
+        processes each frame to extract 21 hand landmarks per detected hand.</p>
+    <p>The directional command interpretation system implements a sophisticated vector-based approach to classify hand
+        gestures into robotic movement commands. The algorithm analyzes the spatial relationship between specific finger
+        landmarks, particularly focusing on the thumb tip, thumb base, index finger tip, and index finger base
+        positions.</p>
+    <p>By computing directional vectors between these landmarks and applying dot product analysis, the system determines
+        the primary pointing direction of the index finger. The classification process uses precise angular thresholds,
+        with vertical movements detected within 70 to 120 degrees from the horizontal axis, rightward movements within 0
+        to 20 degrees, and leftward movements within 160 to 180 degrees. This approach provides robust gesture
+        recognition while minimizing false classifications from ambiguous hand positions.</p>
+
+    <h3>3.3 Speech Recognition</h3>
+    <p>The speech recognition and processing module is split into two steps. Firstly, there is pseudo-real time speech
+        to text transcription, followed by natural language processing to obtain structured control signals.</p>
+    <p>The speech to text system utilizes the RealtimeSTT library and OpenAI whisper for continuous audio capture and
+        transcription. When voice is detected, the system records a snippet of audio which it sends to the model to be
+        transcribed to text.</p>
+    <p>Subsequently, the transcribed text is sent to a locally-hosted Llama3.2 language model accessed via the Ollama
+        framework. We use the following prompt to convert the natural language into predefined structured control
+        inputs:</p>
+    <pre><code>We are controlling a robot arm using voice commands. The user can control if the gripper is open or closed, rotate the arm, move the arm forward or backward, and change the speed of the arm. Based on the user's input, return the action to be taken. Return only the action, no other text. The action must be one of the following: … Here is the user's input: {text}</code></pre>
+    <p>Using the LLM we are able to convert unstructured natural language to structured control inputs that are mapped
+        to control actions.</p>
+
+    <h3>3.4 Robotic Control</h3>
+    <p>At this stage, we have mapped either a speech command or a hand gesture to a certain movement direction. Here, we
+        then use a PID controller to move our robot’s end effector to a specific location in that vector direction. For
+        example, if our gestured direction was “UP,” it would be mapped to a normal vector [0, 0, 1] and we would move
+        our end effector to a location 1 unit above our current location. This methodology is similarly applied to all
+        further movement directions.</p>
+    <p>One thing to note here is that the Robosuite environment is quite small so moving 1 unit in the z direction is a
+        hasty jump, and as a result, we wanted something more precise. Hence, we defined an overall variable called
+        <code>GRANULARITY</code> that specified how much in each direction should our PID be moving. In effect, this
+        results in either accelerating or decelerating the robotic end effector. In scenarios where precision is
+        critical—such as in the Stacking Cubes task, where the final step involves placing the red cube on top of the
+        green one—fine control becomes essential. To achieve this, the system slows down as it approaches the target,
+        allowing for more precise positioning before releasing the cube.</p>
+
+    <h2>4. Evaluation Results</h2>
+
+    <h3>4.1 Experimental Methodology</h3>
+    <p>The system evaluation was conducted through controlled experiments focusing on task completion accuracy, response
+        latency, and multimodal integration effectiveness. Our simulation environment was the Block Stacking policy,
+        trying to stack the smaller red cube atop the bigger green cube.</p>
+
+    <h3>4.2 Performance Analysis</h3>
+    <p>Due to the nature of the Block Stacking environment, we were always able to stack our red cube on top of the
+        green cube using strictly gestures and speech. However, some instructions needed to be repeated, in particular
+        speech instructions that were not transcribed and classified correctly the first time around.</p>
+    <p>Latency measurements revealed the primary performance bottleneck in the speech processing pipeline. Gesture
+        recognition maintained consistently low latency at 33 milliseconds average, making it suitable for real-time
+        control applications. However, speech processing exhibited significantly higher delays, with speech-to-text
+        conversion and language model inference requiring 1–2 seconds. The overall system response time, with Llama3.2,
+        Mediapipe, and RealTimeSTT, averaged 3.8 seconds, dominated by the natural language processing components.</p>
+    <p>Our final evaluation pertains to accuracy of our transcription and action classification framework. Out of 50
+        tested samples of “Open the gripper,” “Move forward,” “Move backward,” etc., it classified the action correctly
+        39 times.</p>
+
+    <h2>5. Discussion and Reflections</h2>
+
+    <h3>5.1 Technical Contributions and Insights</h3>
+    <p>This research demonstrates the practical feasibility of integrating gesture recognition with local language model
+        processing for robotic control applications. The successful combination of real-time visual input with natural
+        language commands effectively leverages each modality's inherent strengths. The gesture recognition system
+        provides immediate spatial control with minimal latency, while speech commands enable semantic task
+        specification, parameter adjustments, and a wider action space that would be difficult to achieve through
+        gestures alone.</p>
+
+    <h3>5.2 Challenges and Limitations</h3>
+    <p>The most significant challenge identified is the latency bottleneck associated with local language model
+        processing. The 3.45-second average response time for speech commands significantly exceeds the threshold for
+        perceived real-time interaction, potentially reducing user satisfaction and limiting practical applicability.
+        This can be improved with more powerful computing and GPU hardware.</p>
+    <p>Similarly, the accuracy of the natural language evaluation can be improved with better hardware. We were limited
+        to the Llama3.2 model due to its smaller size and quicker token processing rate to attempt to improve the
+        latency. With more powerful compute hardware, better models can be used with improved natural language
+        processing ability.</p>
+    <p>Gesture recognition robustness represents another important limitation. While MediaPipe provides reliable hand
+        tracking under controlled conditions, the current implementation shows sensitivity to environmental factors
+        including lighting variations and hand occlusion. Additionally, the lack of depth sensing removes several
+        intuitive gestures and actions from being recognized by the system.</p>
+
+    <h2>6. Conclusion</h2>
+    <p>This research presents a successful integration of gesture recognition and speech processing for multimodal
+        robotic arm control, demonstrating measurable improvements in task completion rates compared to single-modality
+        approaches. The system architecture effectively combines MediaPipe's robust hand tracking capabilities with
+        local language model processing through a threaded control framework that enables simultaneous processing of
+        multiple input modalities.</p>
+</body>
+
+</html>
